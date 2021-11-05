@@ -6,7 +6,22 @@ import (
 )
 
 func main() {
-	channelStatesExample()
+	nilChannel()
+}
+
+func nilChannel() {
+	// throws fatal error: all goroutines are asleep - deadlock!
+
+	var chan1 chan string
+	go func() {
+		chan1 <- "hey"
+		fmt.Println("Ok that worked")
+	}()
+
+	select {
+	case response := <-chan1:
+		fmt.Println(response)
+	}
 }
 
 func channelStatesExample() {
@@ -22,6 +37,12 @@ func channelStatesExample() {
 	c1 = make(chan int)
 
 	// you can read from closed channel
+	/*
+		When channel is closed, value read by the goroutine is zero value of the data type of the channel.
+		In this case, since channel is transporting int data type, it will be 0 as we can see from the result.
+		Closing the channel does not block the current goroutine unlike reading or writing a value to the channel.
+		better to use for range
+	*/
 	go func() {
 		value := <-c1
 		fmt.Println("Got value %d", value)
@@ -105,6 +126,7 @@ func example4() {
 	time.Sleep(2 * time.Second)
 
 	// we can use for to read multiple messages from the channel
+	// deadlock can be avoided by means of default keyword. Go will not look for any go routines if the channel is empty
 	for {
 		select {
 		case res := <-c1:
