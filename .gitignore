@@ -21,4 +21,4 @@ bin/
 .idea/
 .DS_Store
 *.iml
-
+*.txt

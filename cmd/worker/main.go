@@ -1,12 +1,11 @@
 package main
 
 import (
-	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/Superzer0/go-tutorial/internal/app"
 	"github.com/Superzer0/go-tutorial/internal/pkg/common"
 )
 
@@ -18,19 +17,26 @@ type cmdInput struct {
 }
 
 func main() {
-	if cmdParams, error := parseInput(); error == nil {
-		fmt.Println(cmdParams)
-	} else {
+
+	cmdParams := parseInput()
+
+	switch cmdParams.Mode {
+	case common.Analyze:
+		app.AnalyzeLinks(cmdParams.FirstFileName, cmdParams.SecondFileName)
+	case common.Merge:
+		app.MergeResults(cmdParams.FirstFileName, cmdParams.SecondFileName, cmdParams.OutputFileName)
+	default:
+		log.Fatalf("Unrecognized option %s \n", cmdParams.Mode)
 		os.Exit(1)
 	}
 }
 
-func parseInput() (*cmdInput, error) {
+func parseInput() *cmdInput {
 
 	mode := flag.String("mode", common.Analyze, "Program mode. Use analyze or merge")
-	firstFileName := flag.String("file1", "out1.txt", "First file name")
-	secondFileName := flag.String("file2", "out2.txt", "Second file name")
-	outputFileName := flag.String("outFile", "out3.txt", "Output file name")
+	firstFileName := flag.String("file1", "out1.txt", "First downloaded file name")
+	secondFileName := flag.String("file2", "out2.txt", "Second downloaded file name")
+	outputFileName := flag.String("mergeFile", "out3.txt", "Merge output file name")
 
 	flag.Parse()
 
@@ -40,14 +46,7 @@ func parseInput() (*cmdInput, error) {
 		SecondFileName: *secondFileName,
 		OutputFileName: *outputFileName,
 	}
-
-	if cmdInputParams.Mode != common.Analyze &&
-		cmdInputParams.Mode != common.Merge {
-		log.Fatalf("Unrecognized option %s \n", cmdInputParams.Mode)
-		return nil, errors.New("Unrecognized option")
-	}
-
 	log.Printf("Running with: %+v \n", cmdInputParams)
 
-	return &cmdInputParams, nil
+	return &cmdInputParams
 }
