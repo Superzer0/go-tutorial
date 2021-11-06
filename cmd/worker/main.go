@@ -19,16 +19,21 @@ type cmdInput struct {
 func main() {
 
 	cmdParams := parseInput()
-
+	var err error
 	switch cmdParams.Mode {
 	case common.Analyze:
-		app.AnalyzeLinks(cmdParams.FirstFileName, cmdParams.SecondFileName)
+		err = app.AnalyzeLinks(cmdParams.FirstFileName, cmdParams.SecondFileName)
 	case common.Merge:
-		app.MergeResults(cmdParams.FirstFileName, cmdParams.SecondFileName, cmdParams.OutputFileName)
+		err = app.MergeResults(cmdParams.FirstFileName, cmdParams.SecondFileName, cmdParams.OutputFileName)
 	default:
 		log.Fatalf("Unrecognized option %s \n", cmdParams.Mode)
 		os.Exit(1)
 	}
+
+	if err != nil {
+		log.Fatalf("Operation not successful %s \n", err)
+	}
+
 }
 
 func parseInput() *cmdInput {
