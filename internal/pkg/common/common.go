@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -41,8 +40,7 @@ type AppSettings struct {
 func ReadSettings() (*AppSettings, error) {
 	jsonFile, err := os.Open("settings.json")
 	if err != nil {
-		log.Fatalf("Cannot read settings.json! %v \n", err)
-		return nil, err
+		return nil, fmt.Errorf("cannot read settings.json! %v ", err)
 	}
 
 	defer jsonFile.Close()
@@ -58,17 +56,30 @@ func RankByWordCount(text string) PairList {
 	words := strings.Fields(text)
 
 	for _, word := range words {
-		wordMap[word] += 1
+		wordMap[strings.ToLower(word)] += 1
 	}
 
-	pl := make(PairList, len(wordMap))
+	pl := NewPairList(wordMap)
+	sort.Sort(sort.Reverse(pl))
+	return pl
+}
+
+func MergeWordCounts(a PairList, b PairList) PairList {
+	wordMap := make(map[string]int, len(a))
+
+	for _, pair := range append(a, b...) {
+		wordMap[pair.Word] += pair.Occurences
+	}
+	return NewPairList(wordMap)
+}
+
+func NewPairList(dic map[string]int) PairList {
+	pl := make(PairList, len(dic))
 	var i = 0
-	for k, v := range wordMap {
+	for k, v := range dic {
 		pl[i] = Pair{Word: k, Occurences: v}
 		i++
 	}
-
-	sort.Sort(sort.Reverse(pl))
 	return pl
 }
 
@@ -82,3 +93,21 @@ type PairList []Pair
 func (p PairList) Len() int           { return len(p) }
 func (p PairList) Less(i, j int) bool { return p[i].Occurences < p[j].Occurences }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func SaveOutputFile(wordsRank PairList, fileName string) error {
+	out, err := os.Create(fileName)
+
+	if err != nil {
+		return fmt.Errorf("could not save %s. %w", fileName, err)
+	}
+	defer out.Close()
+
+	for i := 0; i < len(wordsRank); i++ {
+		_, err := out.WriteString(fmt.Sprintf("%s:%d\n", wordsRank[i].Word, wordsRank[i].Occurences))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

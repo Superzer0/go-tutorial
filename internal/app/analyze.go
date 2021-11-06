@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/Superzer0/go-tutorial/internal/pkg/common"
@@ -47,8 +46,7 @@ func AnalyzeLinks(file1 string, file2 string) error {
 		select {
 		case <-doneChan:
 		case <-time.After(time.Minute * 1):
-			log.Fatal("Analyze task timed out after 1 minutes")
-			return fmt.Errorf("Analyze task timed out after 1 minute")
+			return fmt.Errorf("analyze task timed out after 1 minute")
 		}
 	}
 
@@ -69,23 +67,13 @@ func analyzeWorker(inputChan chan analyzeStringInput, doneChan chan bool) {
 	for input := range inputChan {
 
 		wordCount := common.RankByWordCount(input.Content)
-
-		out, err := os.Create(input.FileName)
+		err := common.SaveOutputFile(wordCount[:50], input.FileName)
 		if err != nil {
-			log.Fatalf("Could not save %s. %v", input.FileName, err)
+			log.Fatalf("could not analyze %s %v\n", input.FileName, err)
+		} else {
+			fmt.Printf("Analyzed and saved %s \n", input.FileName)
 		}
 
-		var itemsToWrite = 50
-		if itemsToWrite > len(wordCount) {
-			itemsToWrite = len(wordCount)
-		}
-
-		for i := 0; i < itemsToWrite; i++ {
-			out.WriteString(fmt.Sprintln(wordCount[i].Word))
-		}
-
-		out.Close()
-		fmt.Printf("Analyzed and saved %s \n", input.FileName)
 		doneChan <- true
 	}
 }

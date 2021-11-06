@@ -45,11 +45,11 @@ func channelStatesExample() {
 	*/
 	go func() {
 		value := <-c1
-		fmt.Println("Got value %d", value)
+		fmt.Printf("Got value %d\n", value)
 
 		value1, isClosed := <-c1
 		if !isClosed {
-			fmt.Println("Got value %d", value1)
+			fmt.Printf("Got value %d\n", value1)
 		} else {
 			fmt.Println("Channel closed")
 		}
@@ -65,11 +65,11 @@ func timersExample() {
 
 	// lets wait 2 seconds
 	a := <-timer1.C
-	fmt.Println("Timer one fired at %d", a)
+	fmt.Printf("Timer one fired at %v\n", a)
 	timer1.Reset(3 * time.Second)
 
 	a = <-timer1.C
-	fmt.Println("Timer one fired second time at %d", a)
+	fmt.Printf("Timer one fired second time at %v\n", a)
 
 	// we can stop timer befor it fired
 	timer2 := time.NewTimer(1 * time.Second)
@@ -212,13 +212,13 @@ func example1() {
 	fmt.Println(msg)
 
 	time.Sleep(2 * time.Second)
-	msg = <-messages
+	<-messages
 
 	time.Sleep(2 * time.Second)
-	msg = <-messages
+	<-messages
 
 	time.Sleep(2 * time.Second)
-	msg = <-messages
+	<-messages
 
 	// msg = <-messages // if there are no gorouties that are attached to chanell it will fail.
 	println("Exit")

@@ -31,7 +31,7 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatalf("Operation not successful %s \n", err)
+		log.Fatalf("Operation not successful %v \n", err)
 	}
 
 }
